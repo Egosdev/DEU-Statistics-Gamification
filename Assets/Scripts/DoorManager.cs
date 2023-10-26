@@ -21,12 +21,12 @@ public class DoorManager : MonoBehaviour
     #endregion
 
     [SerializeField] GameObject _doorPref;
-    [HideInInspector][SerializeField] List<bool> doorPrizeArray = new List<bool>();
+    [HideInInspector][SerializeField] List<Door> doorArray = new List<Door>();
     [SerializeField] Transform _doorManagerContainer;
     public int doorCount = 3;
     int correctDoorIndex;
-
-    public GameObject selected;
+    [SerializeField][Range(1, 2)] float offsetX = 1;
+    [SerializeField][Range(1, 2)] float offsetY = 1;
 
     void Start() => DoorsSetup();
 
@@ -37,17 +37,21 @@ public class DoorManager : MonoBehaviour
         correctDoorIndex = Random.Range(0, doorCount);
         for (int i = 0; i < doorCount; i++)
         {
-            GameObject _newDoor = Instantiate(_doorPref, transform.position + new Vector3(i * 2 - 2, 0, 0), Quaternion.identity);
-            if (i == correctDoorIndex) doorPrizeArray.Add(true);
-            else doorPrizeArray.Add(false);
-            _newDoor.name = i.ToString();
-            _newDoor.transform.SetParent(_doorManagerContainer);
+            GameObject _newDoorPref = Instantiate(_doorPref, transform.position + new Vector3(i * 2 * offsetX, 0, 0), Quaternion.identity);
+            _newDoorPref.transform.SetParent(_doorManagerContainer);
+            _newDoorPref.name = i.ToString();
+            Door _doorObject = _newDoorPref.GetComponent<Door>();
+            _doorObject.index = i;
+            if (i == correctDoorIndex) _doorObject.isCorrect = true;
+            else _doorObject.isCorrect = false;
+
+            doorArray.Append(_doorObject);
         }
     }
 
     private void DoorsReset()
     {
-        if (doorPrizeArray != null) doorPrizeArray.Clear();
+        if (doorArray != null) doorArray.Clear();
         if (_doorManagerContainer.childCount == 0) return;
 
         foreach (Transform child in _doorManagerContainer)
@@ -55,11 +59,12 @@ public class DoorManager : MonoBehaviour
             Destroy(child);
         }
     }
-}
 
-class Door
-{
-    protected GameObject doorObject;
-    protected bool isCorrect;
-    protected int index;
+    public void ResetAllDoorScale()
+    {
+        foreach (Door component in doorArray)
+        {
+            component.transform.localScale = Vector3.one;
+        }
+    }
 }
