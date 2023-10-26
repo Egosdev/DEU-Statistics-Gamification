@@ -21,12 +21,13 @@ public class DoorManager : MonoBehaviour
     #endregion
 
     [SerializeField] GameObject _doorPref;
-    [HideInInspector][SerializeField] List<Door> doorArray = new List<Door>();
+    [HideInInspector][SerializeField] List<Door> doorList = new List<Door>();
+    [HideInInspector][SerializeField] List<Door> doorListWithoutCorrect = new List<Door>();
     [SerializeField] Transform _doorManagerContainer;
     public int doorCount = 3;
     int correctDoorIndex;
     [SerializeField][Range(1, 2)] float offsetX = 1;
-    [SerializeField][Range(1, 2)] float offsetY = 1;
+    //[SerializeField][Range(1, 2)] float offsetY = 1;
 
     void Start() => DoorsSetup();
 
@@ -45,13 +46,13 @@ public class DoorManager : MonoBehaviour
             if (i == correctDoorIndex) _doorObject.isCorrect = true;
             else _doorObject.isCorrect = false;
 
-            doorArray.Append(_doorObject);
+            doorList.Add(_doorObject);
         }
     }
 
     private void DoorsReset()
     {
-        if (doorArray != null) doorArray.Clear();
+        if (doorList != null) doorList.Clear();
         if (_doorManagerContainer.childCount == 0) return;
 
         foreach (Transform child in _doorManagerContainer)
@@ -62,9 +63,42 @@ public class DoorManager : MonoBehaviour
 
     public void ResetAllDoorScale()
     {
-        foreach (Door component in doorArray)
+        foreach (Door component in doorList)
         {
             component.transform.localScale = Vector3.one;
         }
     }
+
+    // If player's selected door is correct door, 
+
+    void CopyDoorList()
+    {
+        foreach (Door component in doorList)
+        {
+            if (MontyhallManager.Instance.selected.GetComponent<Door>() != component && component != doorList[correctDoorIndex])
+            {
+                doorListWithoutCorrect.Add(component);
+            }
+        }
+
+        if (MontyhallManager.Instance.selected.GetComponent<Door>() == doorList[correctDoorIndex])
+        {
+            int rnd = Random.Range(0, doorListWithoutCorrect.Count);
+            doorListWithoutCorrect.Remove(doorListWithoutCorrect[rnd]);
+        }
+    }
+
+    public void OpenDoors()
+    {
+        CopyDoorList();
+        
+        foreach (Door door in doorListWithoutCorrect)
+        {
+            if (door.isCorrect) Debug.LogError("correct door open error");
+
+            door.SetAnimation(true);
+        }
+    }
+
+    public bool TestCorrectness(Door door) => door == doorList[correctDoorIndex];
 }

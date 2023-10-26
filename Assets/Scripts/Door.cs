@@ -9,12 +9,13 @@ public class Door : MonoBehaviour
     public int index;
     [SerializeField] Animator anim;
 
-    public void OpenAnimation() => anim.SetTrigger("open");
-    public void CloseAnimation() => anim.SetTrigger("close");
+    public void SetAnimation(bool open) => anim.SetBool("door", open);
 
     private void OnMouseEnter()
     {
-        if (Instance.CurrentGameState == GameState.SELECT_DOOR)
+        if (anim.GetBool("door")) return;
+
+        if (Instance.CurrentGameState == GameState.SELECT_DOOR || Instance.CurrentGameState == GameState.KEEP_OR_CHANGE)
         {
             DoorManager.Instance.ResetAllDoorScale();
             transform.localScale = new Vector3(1.1f, 1.1f, 1);
@@ -23,6 +24,9 @@ public class Door : MonoBehaviour
 
     private void OnMouseExit()
     {
-        transform.localScale = Vector3.one;
+        if (Instance.CurrentGameState == GameState.SELECT_DOOR || Instance.CurrentGameState == GameState.KEEP_OR_CHANGE)
+        {
+            transform.localScale = Vector3.one;
+        }
     }
 }
