@@ -28,6 +28,7 @@ public class MontyhallManager : MonoBehaviour
     int tryCounter = 0;
 
     [SerializeField] string[] statusTexts;
+    string winLoseText;
 
     private void Start() => statusTextPlaceholder.text = statusTexts[0];
 
@@ -56,7 +57,7 @@ public class MontyhallManager : MonoBehaviour
         if (state == GameState.BUSY)
         {
             statusTextPlaceholder.text = statusTexts[1];
-            statusSubTextPlaceholder.enabled = false;
+            statusSubTextPlaceholder.gameObject.SetActive(false);
             StartCoroutine(OpenSomeDoors());
         }
         else if (state == GameState.KEEP_OR_CHANGE)
@@ -65,16 +66,28 @@ public class MontyhallManager : MonoBehaviour
         }
         else if (state == GameState.DONE)
         {
-            tryCounter++;
-            tmpCounter.text = tryCounter.ToString();
+            StartCoroutine(TrialDone());
         }
     }
 
+    IEnumerator TrialDone()
+    {
+        yield return new WaitForSeconds(1f);
+        tryCounter++;
+        tmpCounter.text = tryCounter.ToString();
+        statusTextPlaceholder.text = winLoseText;
+        yield return new WaitForSeconds(2.5f);
+        CurrentGameState = GameState.SELECT_DOOR;
+        DoorManager.Instance.DoorsSetup();
+        statusTextPlaceholder.text = statusTexts[0];
+        statusSubTextPlaceholder.gameObject.SetActive(false);
+        statusSubTextPlaceholder.text = "Onaylamak için tekrar týkla!";
+    }
     IEnumerator OpenSomeDoors()
     {
         yield return new WaitForSeconds(1f);
         DoorManager.Instance.OpenDoors();
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(2f);
         CurrentGameState = GameState.KEEP_OR_CHANGE;
     }
 
@@ -95,6 +108,8 @@ public class MontyhallManager : MonoBehaviour
 
     void SelectDoor(GameObject clickedDoor)
     {
+        if (!(CurrentGameState == GameState.SELECT_DOOR || CurrentGameState == GameState.KEEP_OR_CHANGE)) return;
+        if (clickedDoor.GetComponent<Door>().IsOpen()) return;
         if (!statusSubTextPlaceholder.gameObject.activeSelf) statusSubTextPlaceholder.gameObject.SetActive(true);
 
         if (CurrentGameState == GameState.SELECT_DOOR)
@@ -114,17 +129,19 @@ public class MontyhallManager : MonoBehaviour
         {
             if (DoorManager.Instance.TestCorrectness(clickedDoor.GetComponent<Door>()))
             {
-                statusTextPlaceholder.text = "Tebrikler, büyük ödülü kazandýn!";
+                winLoseText = "Tebrikler, büyük ödülü kazandýn!";
             }
             else
             {
-                statusTextPlaceholder.text = "Eyvah, hiçbir þey kazanamadýn :(";
+                winLoseText = "Eyvah, hiçbir þey kazanamadýn :(";
             }
 
-            if (initSelected == clickedDoor) statusSubTextPlaceholder.text = "Seçtiðin kapýyý sabit tuttun.";
-            else statusSubTextPlaceholder.text = "Seçtiðin kapýyý deðiþtirdin.";
+            if (initSelected == clickedDoor) statusSubTextPlaceholder.text = "Kapýyý sabit tuttun.";
+            else statusSubTextPlaceholder.text = "Kapýyý deðiþtirdin.";
 
             sign.gameObject.SetActive(false);
+            clickedDoor.GetComponent<Door>().OpenDoor(true);
+            statusTextPlaceholder.text = "...";
             CurrentGameState = GameState.DONE;
         }
     }

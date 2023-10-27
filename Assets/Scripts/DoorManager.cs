@@ -52,21 +52,23 @@ public class DoorManager : MonoBehaviour
 
     private void DoorsReset()
     {
-        if (doorList != null) doorList.Clear();
+        if (doorList != null)
+        {
+            ResetAllDoorScale();
+            doorList.Clear();
+        }
+        if (doorListWithoutCorrect != null) doorListWithoutCorrect.Clear();
+        correctDoorIndex = 0;
         if (_doorManagerContainer.childCount == 0) return;
 
         foreach (Transform child in _doorManagerContainer)
-        {
-            Destroy(child);
-        }
+            Destroy(child.gameObject);
     }
 
     public void ResetAllDoorScale()
     {
         foreach (Door component in doorList)
-        {
             component.transform.localScale = Vector3.one;
-        }
     }
 
     // If player's selected door is correct door, 
@@ -96,7 +98,7 @@ public class DoorManager : MonoBehaviour
         {
             if (door.isCorrect) Debug.LogError("correct door open error");
 
-            door.SetAnimation(true);
+            door.OpenDoor(true);
         }
     }
 

@@ -9,11 +9,14 @@ public class Door : MonoBehaviour
     public int index;
     [SerializeField] Animator anim;
 
-    public void SetAnimation(bool open) => anim.SetBool("door", open);
+    public void OpenDoor(bool open) => anim.SetBool("door", open);
+
+    public bool IsOpen() => anim.GetBool("door");
+
 
     private void OnMouseEnter()
     {
-        if (anim.GetBool("door")) return;
+        if (IsOpen()) return;
 
         if (Instance.CurrentGameState == GameState.SELECT_DOOR || Instance.CurrentGameState == GameState.KEEP_OR_CHANGE)
         {
