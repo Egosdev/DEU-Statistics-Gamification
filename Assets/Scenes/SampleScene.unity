@@ -1404,10 +1404,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Select Sign
       objectReference: {fileID: 0}
-    - target: {fileID: 732436328698477472, guid: 637a89f69e8d184469b5e5b79b632aeb, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2216516057514185375, guid: 637a89f69e8d184469b5e5b79b632aeb, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.07
