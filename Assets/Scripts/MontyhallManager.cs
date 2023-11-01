@@ -1,3 +1,4 @@
+using Pixelplacement;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -22,6 +23,12 @@ public class MontyhallManager : MonoBehaviour
     [SerializeField] Transform sign;
     [SerializeField] Chart chart;
     [SerializeField] string[] statusTexts;
+    [SerializeField] ParticleSystem[] _confettiVFX;
+    [SerializeField] RectTransform bottomPanel;
+    [SerializeField] RectTransform upperPanel;
+    [SerializeField] RectTransform chartPanel;
+
+    [HideInInspector]
     public GameObject selected;
 
     private GameObject initSelected;
@@ -63,6 +70,7 @@ public class MontyhallManager : MonoBehaviour
         else if (state == GameState.KEEP_OR_CHANGE)
         {
             statusTextPlaceholder.text = statusTexts[2];
+            DoorManager.Instance.ResetAllDoorsHoverAnimation();
         }
         else if (state == GameState.DONE)
         {
@@ -76,6 +84,7 @@ public class MontyhallManager : MonoBehaviour
         tryCounter++;
         tmpCounter.text = tryCounter.ToString();
         statusTextPlaceholder.text = winLoseText;
+        if (isWon) DummyConfetti();
         yield return new WaitForSeconds(1.75f);
         CurrentGameState = GameState.SELECT_DOOR;
         DoorManager.Instance.DoorsSetup();
@@ -113,6 +122,14 @@ public class MontyhallManager : MonoBehaviour
                 if (hit.transform.CompareTag("Door")) SelectDoor(hit.transform.gameObject);
 
             }
+        }
+    }
+
+    void DummyConfetti()
+    {
+        foreach (ParticleSystem psItem in _confettiVFX)
+        {
+            psItem.Play();
         }
     }
 
@@ -164,5 +181,18 @@ public class MontyhallManager : MonoBehaviour
             statusTextPlaceholder.text = "...";
             CurrentGameState = GameState.DONE;
         }
+    }
+
+    public void BottomPanelAnimation()
+    {
+        Tween.LocalPosition(bottomPanel, new Vector3(0, -540, 0), 1f, 0.5f, Tween.EaseInOutStrong);
+    }
+    public void ChartPanelAnimation()
+    {
+        Tween.LocalPosition(chartPanel, new Vector3(-745, 90, 0), 1f, 1f, Tween.EaseInOutStrong);
+    }
+    public void UpperPanelAnimation()
+    {
+        Tween.LocalPosition(upperPanel, new Vector3(0, 505, 0), 1f, 1.5f, Tween.EaseInOutStrong);
     }
 }
