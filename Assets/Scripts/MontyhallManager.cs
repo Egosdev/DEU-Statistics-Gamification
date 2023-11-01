@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MontyhallManager : MonoBehaviour
@@ -19,19 +16,20 @@ public class MontyhallManager : MonoBehaviour
     }
     #endregion
 
-    public GameObject selected;
-    private GameObject initSelected;
-    [SerializeField] Transform sign;
+    [SerializeField] TextMeshProUGUI tmpCounter;
     [SerializeField] TextMeshPro statusTextPlaceholder;
     [SerializeField] TextMeshPro statusSubTextPlaceholder;
-    [SerializeField] TextMeshProUGUI tmpCounter;
+    [SerializeField] Transform sign;
     [SerializeField] Chart chart;
-    int tryCounter = 0;
-
     [SerializeField] string[] statusTexts;
-    string winLoseText;
-    bool isWon = false;
-    bool isSwitch = false;
+    public GameObject selected;
+
+    private GameObject initSelected;
+    private string winLoseText;
+    private bool isWon = false;
+    private bool isSwitch = false;
+    private int tryCounter = 0;
+
     private void Start() => statusTextPlaceholder.text = statusTexts[0];
 
     public enum GameState
@@ -143,14 +141,13 @@ public class MontyhallManager : MonoBehaviour
             {
                 winLoseText = "Tebrikler, büyük ödülü kazandýn!";
                 isWon = true;
-                clickedDoor.GetComponent<Door>().OpenPrizeDoor(true);
             }
             else
             {
                 winLoseText = "Eyvah, hiçbir þey kazanamadýn :(";
                 isWon = false;
-                clickedDoor.GetComponent<Door>().OpenDoor(true);
             }
+            clickedDoor.GetComponent<Door>().Open(true);
 
             if (initSelected == clickedDoor)
             {

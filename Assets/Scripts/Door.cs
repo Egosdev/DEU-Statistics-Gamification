@@ -1,19 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static MontyhallManager;
 
 public class Door : MonoBehaviour
 {
-    public bool isCorrect;
-    public int index;
     [SerializeField] Animator anim;
 
-    public void OpenDoor(bool open) => anim.SetBool("door", open);
-    public void OpenPrizeDoor(bool open) => anim.SetBool("prize", open);
+    public bool isCorrect;
+    public int index;
 
-    public bool IsOpen() => anim.GetBool("door");
+    public void Open(bool open)
+    {
+        if (isCorrect) anim.SetBool("prize", open);
+        else anim.SetBool("door", open);
+    }
+        
+    public bool IsOpen() => anim.GetBool("door") || anim.GetBool("prize");
 
+    public void ResetScale() => transform.localScale = Vector3.one;
 
     private void OnMouseEnter()
     {
@@ -30,7 +33,7 @@ public class Door : MonoBehaviour
     {
         if (Instance.CurrentGameState == GameState.SELECT_DOOR || Instance.CurrentGameState == GameState.KEEP_OR_CHANGE)
         {
-            transform.localScale = Vector3.one;
+            ResetScale();
         }
     }
 }

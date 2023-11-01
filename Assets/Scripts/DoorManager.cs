@@ -19,28 +19,31 @@ public class DoorManager : MonoBehaviour
 
     [SerializeField] GameObject _doorPref;
     [SerializeField] Transform _doorManagerContainer;
-    [SerializeField] [Range(1, 2)] float offsetX = 1;
+    [SerializeField] [Range(1, 2)] float _offsetX = 1;
+    [SerializeField] [Range(1, 2)] float _offsetY = 1;
+    [SerializeField] int _doorCount = 3;
+    [SerializeField] int _doorCountInRow = 10;
 
     [HideInInspector]
-    [SerializeField] List<Door> doorList = new List<Door>();
+    [SerializeField] List<Door> doorList = new();
 
-    public int doorCount = 3;
     private int _correctDoorIndex;
 
     void Start() => DoorsSetup();
+
     public bool CheckForPrizeDoor(Door door) => door == doorList[_correctDoorIndex];
 
     /// <summary>
-    /// Recreate the doors at the beginning of each round.
+    /// Recreates the doors at the beginning of each game loop.
     /// </summary>
     public void DoorsSetup()
     {
         RemoveAllDoors();
 
-        _correctDoorIndex = Random.Range(0, doorCount);
-        for (int i = 0; i < doorCount; i++)
+        _correctDoorIndex = Random.Range(0, _doorCount);
+        for (int i = 0; i < _doorCount; i++)
         {
-            GameObject _newDoorPref = Instantiate(_doorPref, transform.position + new Vector3(i * 2 * offsetX, 0, 0), Quaternion.identity, _doorManagerContainer);
+            GameObject _newDoorPref = Instantiate(_doorPref, transform.position + new Vector3((i % _doorCountInRow) * 2 * _offsetX, -(i / _doorCountInRow) * 3 * _offsetY, 0), Quaternion.identity, _doorManagerContainer);
             _newDoorPref.name = i.ToString();
             _newDoorPref.GetComponent<Door>().index = i;
 
@@ -58,7 +61,7 @@ public class DoorManager : MonoBehaviour
         foreach (Door door in prizelessDoors)
         {
             if (door.isCorrect) Debug.LogError("correct door open error");
-            door.OpenDoor(true);
+            door.Open(true);
         }
     }
 
@@ -66,17 +69,18 @@ public class DoorManager : MonoBehaviour
     public void ResetAllDoorsHoverAnimation()
     {
         foreach (Door component in doorList)
-            component.transform.localScale = Vector3.one;
+            component.ResetScale();
     }
 
     /*
+     * LOGIC
      * It appends doors to the list that do not include the door you selected and have no rewards behind them.
      * If the door you select contains a reward, a random door will be removed from the list. 
      * The door that remains is the one where you will be asked if you want to change your choice.
      */
     private List<Door> ListPrizelessDoors()
     {
-        List<Door> _prizelessDoors = new List<Door>();
+        List<Door> _prizelessDoors = new();
         Door _selected = MontyhallManager.Instance.selected.GetComponent<Door>();
 
         foreach (Door currentDoor in doorList)
