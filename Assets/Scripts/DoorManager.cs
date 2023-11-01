@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -21,86 +18,91 @@ public class DoorManager : MonoBehaviour
     #endregion
 
     [SerializeField] GameObject _doorPref;
-    [HideInInspector][SerializeField] List<Door> doorList = new List<Door>();
-    [HideInInspector][SerializeField] List<Door> doorListWithoutCorrect = new List<Door>();
     [SerializeField] Transform _doorManagerContainer;
+    [SerializeField] [Range(1, 2)] float offsetX = 1;
+
+    [HideInInspector]
+    [SerializeField] List<Door> doorList = new List<Door>();
+
     public int doorCount = 3;
-    int correctDoorIndex;
-    [SerializeField][Range(1, 2)] float offsetX = 1;
-    //[SerializeField][Range(1, 2)] float offsetY = 1;
+    private int _correctDoorIndex;
 
     void Start() => DoorsSetup();
+    public bool CheckForPrizeDoor(Door door) => door == doorList[_correctDoorIndex];
 
+    /// <summary>
+    /// Recreate the doors at the beginning of each round.
+    /// </summary>
     public void DoorsSetup()
     {
-        DoorsReset();
+        RemoveAllDoors();
 
-        correctDoorIndex = Random.Range(0, doorCount);
+        _correctDoorIndex = Random.Range(0, doorCount);
         for (int i = 0; i < doorCount; i++)
         {
-            GameObject _newDoorPref = Instantiate(_doorPref, transform.position + new Vector3(i * 2 * offsetX, 0, 0), Quaternion.identity);
-            _newDoorPref.transform.SetParent(_doorManagerContainer);
+            GameObject _newDoorPref = Instantiate(_doorPref, transform.position + new Vector3(i * 2 * offsetX, 0, 0), Quaternion.identity, _doorManagerContainer);
             _newDoorPref.name = i.ToString();
-            Door _doorObject = _newDoorPref.GetComponent<Door>();
-            _doorObject.index = i;
-            if (i == correctDoorIndex) _doorObject.isCorrect = true;
-            else _doorObject.isCorrect = false;
+            _newDoorPref.GetComponent<Door>().index = i;
 
-            doorList.Add(_doorObject);
+            doorList.Add(_newDoorPref.GetComponent<Door>());
         }
+        doorList[_correctDoorIndex].isCorrect = true;
     }
 
-    private void DoorsReset()
+    /// <summary>
+    /// Doors without prizes will open until only two doors remain, one with a prize and the other without a prize.
+    /// </summary>
+    public void OpenNonPrizeDoors()
     {
-        if (doorList != null)
+        List<Door> prizelessDoors = ListPrizelessDoors();
+        foreach (Door door in prizelessDoors)
         {
-            ResetAllDoorScale();
-            doorList.Clear();
+            if (door.isCorrect) Debug.LogError("correct door open error");
+            door.OpenDoor(true);
         }
-        if (doorListWithoutCorrect != null) doorListWithoutCorrect.Clear();
-        correctDoorIndex = 0;
-        if (_doorManagerContainer.childCount == 0) return;
-
-        foreach (Transform child in _doorManagerContainer)
-            Destroy(child.gameObject);
     }
 
-    public void ResetAllDoorScale()
+    // Resets the scale of all doors.
+    public void ResetAllDoorsHoverAnimation()
     {
         foreach (Door component in doorList)
             component.transform.localScale = Vector3.one;
     }
 
-    // If player's selected door is correct door, 
-
-    void CopyDoorList()
+    /*
+     * It appends doors to the list that do not include the door you selected and have no rewards behind them.
+     * If the door you select contains a reward, a random door will be removed from the list. 
+     * The door that remains is the one where you will be asked if you want to change your choice.
+     */
+    private List<Door> ListPrizelessDoors()
     {
-        foreach (Door component in doorList)
+        List<Door> _prizelessDoors = new List<Door>();
+        Door _selected = MontyhallManager.Instance.selected.GetComponent<Door>();
+
+        foreach (Door currentDoor in doorList)
         {
-            if (MontyhallManager.Instance.selected.GetComponent<Door>() != component && component != doorList[correctDoorIndex])
+            if (_selected != currentDoor && !CheckForPrizeDoor(currentDoor))
             {
-                doorListWithoutCorrect.Add(component);
+                _prizelessDoors.Add(currentDoor);
             }
         }
 
-        if (MontyhallManager.Instance.selected.GetComponent<Door>() == doorList[correctDoorIndex])
+        if (CheckForPrizeDoor(_selected))
         {
-            int rnd = Random.Range(0, doorListWithoutCorrect.Count);
-            doorListWithoutCorrect.Remove(doorListWithoutCorrect[rnd]);
+            int rnd = Random.Range(0, _prizelessDoors.Count);
+            _prizelessDoors.Remove(_prizelessDoors[rnd]);
         }
+
+        return _prizelessDoors;
     }
 
-    public void OpenDoors()
+    // Destroys all doors on scene.
+    private void RemoveAllDoors()
     {
-        CopyDoorList();
-        
-        foreach (Door door in doorListWithoutCorrect)
-        {
-            if (door.isCorrect) Debug.LogError("correct door open error");
+        if (doorList != null)
+            foreach (Door door in doorList)
+                Destroy(door.gameObject); // Object pool optimization is required.
 
-            door.OpenDoor(true);
-        }
+        doorList.Clear();
     }
-
-    public bool TestCorrectness(Door door) => door == doorList[correctDoorIndex];
 }

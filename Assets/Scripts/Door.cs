@@ -10,6 +10,7 @@ public class Door : MonoBehaviour
     [SerializeField] Animator anim;
 
     public void OpenDoor(bool open) => anim.SetBool("door", open);
+    public void OpenPrizeDoor(bool open) => anim.SetBool("prize", open);
 
     public bool IsOpen() => anim.GetBool("door");
 
@@ -20,7 +21,7 @@ public class Door : MonoBehaviour
 
         if (Instance.CurrentGameState == GameState.SELECT_DOOR || Instance.CurrentGameState == GameState.KEEP_OR_CHANGE)
         {
-            DoorManager.Instance.ResetAllDoorScale();
+            DoorManager.Instance.ResetAllDoorsHoverAnimation();
             transform.localScale = new Vector3(1.1f, 1.1f, 1);
         }
     }

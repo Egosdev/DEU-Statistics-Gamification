@@ -25,11 +25,13 @@ public class MontyhallManager : MonoBehaviour
     [SerializeField] TextMeshPro statusTextPlaceholder;
     [SerializeField] TextMeshPro statusSubTextPlaceholder;
     [SerializeField] TextMeshProUGUI tmpCounter;
+    [SerializeField] Chart chart;
     int tryCounter = 0;
 
     [SerializeField] string[] statusTexts;
     string winLoseText;
-
+    bool isWon = false;
+    bool isSwitch = false;
     private void Start() => statusTextPlaceholder.text = statusTexts[0];
 
     public enum GameState
@@ -76,17 +78,27 @@ public class MontyhallManager : MonoBehaviour
         tryCounter++;
         tmpCounter.text = tryCounter.ToString();
         statusTextPlaceholder.text = winLoseText;
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(1.75f);
         CurrentGameState = GameState.SELECT_DOOR;
         DoorManager.Instance.DoorsSetup();
         statusTextPlaceholder.text = statusTexts[0];
         statusSubTextPlaceholder.gameObject.SetActive(false);
         statusSubTextPlaceholder.text = "Onaylamak için tekrar týkla!";
+        if (isWon)
+        {
+            if (isSwitch) chart.AddNewData(DataType.SWITCH_WIN, 1);
+            else chart.AddNewData(DataType.STAY_WIN, 1);
+        }
+        else
+        {
+            if (isSwitch) chart.AddNewData(DataType.SWITCH_LOSE, 1);
+            else chart.AddNewData(DataType.STAY_LOSE, 1);
+        }
     }
     IEnumerator OpenSomeDoors()
     {
         yield return new WaitForSeconds(1f);
-        DoorManager.Instance.OpenDoors();
+        DoorManager.Instance.OpenNonPrizeDoors();
         yield return new WaitForSeconds(2f);
         CurrentGameState = GameState.KEEP_OR_CHANGE;
     }
@@ -127,20 +139,31 @@ public class MontyhallManager : MonoBehaviour
         }
         else if (CurrentGameState == GameState.KEEP_OR_CHANGE)
         {
-            if (DoorManager.Instance.TestCorrectness(clickedDoor.GetComponent<Door>()))
+            if (DoorManager.Instance.CheckForPrizeDoor(clickedDoor.GetComponent<Door>()))
             {
                 winLoseText = "Tebrikler, büyük ödülü kazandýn!";
+                isWon = true;
+                clickedDoor.GetComponent<Door>().OpenPrizeDoor(true);
             }
             else
             {
                 winLoseText = "Eyvah, hiçbir þey kazanamadýn :(";
+                isWon = false;
+                clickedDoor.GetComponent<Door>().OpenDoor(true);
             }
 
-            if (initSelected == clickedDoor) statusSubTextPlaceholder.text = "Kapýyý sabit tuttun.";
-            else statusSubTextPlaceholder.text = "Kapýyý deðiþtirdin.";
+            if (initSelected == clickedDoor)
+            {
+                statusSubTextPlaceholder.text = "Kapýyý sabit tuttun.";
+                isSwitch = false;
+            }
+            else
+            {
+                statusSubTextPlaceholder.text = "Kapýyý deðiþtirdin.";
+                isSwitch = true;
+            }
 
             sign.gameObject.SetActive(false);
-            clickedDoor.GetComponent<Door>().OpenDoor(true);
             statusTextPlaceholder.text = "...";
             CurrentGameState = GameState.DONE;
         }
