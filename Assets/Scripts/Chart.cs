@@ -27,7 +27,7 @@ public class Chart : MonoBehaviour
     public void AddNewData(DataType _type, int _value)
     {
         //SetPercentage(_type, _value);
-        _value *= 25;
+        _value *= 1;
         RectTransform _rt = dataTypeRectTransform[(int)_type];
         _rt.sizeDelta += new Vector2(0, _value);
     }
@@ -35,5 +35,13 @@ public class Chart : MonoBehaviour
     public void SetPercentage(DataType _type, int _value)
     {
         dataTypePercentage[(int)_type].text = string.Format("%{0}", _value);
+    }
+
+    public void ClearChart()
+    {
+        dataTypeRectTransform[(int)DataType.STAY_LOSE].sizeDelta = Vector2.zero;
+        dataTypeRectTransform[(int)DataType.STAY_WIN].sizeDelta = Vector2.zero;
+        dataTypeRectTransform[(int)DataType.SWITCH_LOSE].sizeDelta = Vector2.zero;
+        dataTypeRectTransform[(int)DataType.SWITCH_WIN].sizeDelta = Vector2.zero;
     }
 }

@@ -28,6 +28,8 @@ public class DoorManager : MonoBehaviour
     [SerializeField] List<Door> doorList = new();
 
     private int _correctDoorIndex;
+    public int CorrectDoorIndex => _correctDoorIndex;
+    public int DoorCount => _doorCount;
 
     void Start() => DoorsSetup();
 

@@ -1284,6 +1284,7 @@ MonoBehaviour:
   upperPanel: {fileID: 746259108}
   chartPanel: {fileID: 76804018}
   selected: {fileID: 0}
+  repeatCount: 1000
 --- !u!4 &1772664844
 Transform:
   m_ObjectHideFlags: 0

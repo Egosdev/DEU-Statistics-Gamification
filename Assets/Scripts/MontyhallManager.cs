@@ -1,5 +1,6 @@
 using Pixelplacement;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -36,6 +37,12 @@ public class MontyhallManager : MonoBehaviour
     private bool isWon = false;
     private bool isSwitch = false;
     private int tryCounter = 0;
+
+    [Header("Temp")]
+    int stayWinFreq;
+    int switchWinFreq;
+    [SerializeField] int repeatCount = 10;
+
 
     private void Start() => statusTextPlaceholder.text = statusTexts[0];
 
@@ -123,6 +130,31 @@ public class MontyhallManager : MonoBehaviour
 
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ComputerPlay(true); //random & switch
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            ComputerPlay(false); //random & stay
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            switchWinFreq = 0;
+            stayWinFreq = 0;
+            //chart.ClearChart();
+
+            for (int i = 0; i < repeatCount; i++)
+            {
+                ComputerPlay(true);
+                ComputerPlay(false);
+            }
+
+            Debug.Log($"{switchWinFreq / (float) repeatCount * 100}% ({repeatCount} deneme) Switch & Win");
+            Debug.Log($"{stayWinFreq / (float) repeatCount * 100}% ({repeatCount} deneme) sStay & Win");
+        }
     }
 
     void DummyConfetti()
@@ -194,5 +226,43 @@ public class MontyhallManager : MonoBehaviour
     public void UpperPanelAnimation()
     {
         Tween.LocalPosition(upperPanel, new Vector3(0, 505, 0), 1f, 1.5f, Tween.EaseInOutStrong);
+    }
+    public void ComputerPlay(bool _isSwitch)
+    {
+        tryCounter++;
+        tmpCounter.text = tryCounter.ToString();
+        CurrentGameState = GameState.SELECT_DOOR;
+        DoorManager.Instance.DoorsSetup();
+        statusTextPlaceholder.text = statusTexts[0];
+        statusSubTextPlaceholder.gameObject.SetActive(false);
+        statusSubTextPlaceholder.text = "Onaylamak için tekrar týkla!";
+        int selectRandomDoor = Random.Range(0, DoorManager.Instance.DoorCount);
+
+        if (_isSwitch)
+        {
+            if (selectRandomDoor != DoorManager.Instance.CorrectDoorIndex)
+            {
+                chart.AddNewData(DataType.SWITCH_WIN, 1);
+                switchWinFreq++;
+            }
+            else
+            {
+                chart.AddNewData(DataType.SWITCH_LOSE, 1);
+                //switchLoseFreq++;
+            }
+        }
+        else
+        {
+            if (selectRandomDoor != DoorManager.Instance.CorrectDoorIndex)
+            {
+                chart.AddNewData(DataType.STAY_LOSE, 1);
+                //stayLoseFreq++;
+            }
+            else
+            {
+                chart.AddNewData(DataType.STAY_WIN, 1);
+                stayWinFreq++;
+            }
+        }
     }
 }
